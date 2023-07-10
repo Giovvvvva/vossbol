@@ -1,4 +1,4 @@
-// tremola.js
+$// tremola.js
 
 "use strict";
 
@@ -46,6 +46,8 @@ function menu_new_conversation() {
     document.getElementById('plus').style.display = 'none';
     closeOverlay();
 }
+
+let timeThreshold;
 
 function menu_new_contact() {
     document.getElementById('new_contact-overlay').style.display = 'initial';
@@ -402,6 +404,9 @@ function load_chat(nm) {
     document.getElementById('lst:posts').scrollIntoView(false)
     // console.log("did scroll down, but did it do it?")
     */
+
+    // deletes the expired messages after the threshold time is met
+    deleteOldMessages();
 }
 
 function load_chat_title(ch) {
@@ -1001,5 +1006,67 @@ function b2f_initialize(id) {
     setScenario('chats');
     // load_chat("ALL");
 }
+
+/**
+ * Deletes the posts that exceed the specified threshold of time in the settings.
+ * Uses the firstRead property of the posts to determine whether this threshold has been exceeded
+ */
+function deleteOldMessages() {
+    //TODO TEST
+    for (var chat in tremola.chats) {
+          if (
+            tremola.chats.hasOwnProperty(chat) &&
+            tremola.chats[chat] !== null &&
+            tremola.chats[chat] !== undefined
+          ) {
+                for (var post in tremola.chats[chat].posts) {
+                      let today = new Date();
+                      //if the post has first been read more than a certain amount of time, delete it
+                      if (
+                        tremola.chats[chat].posts.hasOwnProperty(post) &&
+                        tremola.chats[chat].posts[post] !== null &&
+                        tremola.chats[chat].posts[post] !== undefined &&
+                        today.getTime() - tremola.chats[chat].posts[post].when >= 10000
+                      ) {
+                            delete tremola.chats[chat].posts[post];
+                      }
+                }
+          }
+    }
+}
+
+//TODO: maybe embelish the layout if possible for the menu: button on side instead of row and hr line
+function setThreshold() {
+    var textarea = document.getElementById("timer-text");
+    var textareaValue = textarea.value;
+    var dropDown = document.getElementById("time-select");
+    var selectValue = dropDown.value;
+    var regex = /^\d+$/;
+
+    if (regex.test(textareaValue)) {
+        console.log("is a number", textareaValue);
+        if (selectValue === "seconds") {
+            timeThreshold = textareaValue * 1000;
+        } else if (selectValue === "minutes") {
+            timeThreshold = textareaValue * 60 * 1000;
+        } else if (selectValue === "hours") {
+            timeThreshold = textareaValue * 60 * 60 * 1000;
+        } else if (selectValue === "days") {
+            timeThreshold = textareaValue * 60 * 60 * 1000 * 24;
+        } else if (selectValue === "weeks") {
+            timeThreshold = textareaValue * 60 * 60 * 1000 * 24 * 7;
+        } else {
+            console.log("no unit selected");
+            return
+        }
+        //for debugging
+        console.log("value in: unit of ", selectValue);
+        console.log("threshold in milliseconds", timeThreshold);
+    } else {
+        console.log("is not a number", textareaValue);
+        return
+    }
+}
+
 
 // --- eof

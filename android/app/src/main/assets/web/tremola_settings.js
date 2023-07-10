@@ -35,7 +35,17 @@ function applySetting(nm, val) {
         load_chat_list();
     } else if (nm == 'hide_forgotten_contacts') {
         load_contact_list();
-    }
+    } else if (nm === 'timer_undelivered_messages') {//GIO: new here for testing toggle
+            //TODO add the function for delete old messages
+            var selection = document.getElementById("menuDiv");
+            //var value = selection.value;
+              if (selection.style.display === "none") {
+                selection.style.display = "block";
+              } else {
+                selection.style.display = "none";
+              }
+            //deleteOldMessages();
+        }
 }
 
 function setSetting(nm, val) {
