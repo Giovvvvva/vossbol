@@ -961,12 +961,16 @@ function b2f_new_event(e) { // incoming SSB log event: we get map with three ent
                 // var txt = null;
                 // if (a[1] != null)
                 //   txt = a[1];
-                //TODO implement recognition of self-deleting messages
-
                 var p = {
                     "key": e.header.ref, "from": e.header.fid, "body": a[1],
                     "voice": a[2], "when": a[3] * 1000
                 };
+                //TODO add the deletion
+                if(a[1].startsWith(";date;of;message;deletion;")){
+                    handleMessageWithDeletionOnReceiver(p);
+                    console.log("timeOfDeletion 2 (receiver):",p.deleteAfter);
+                }
+
                 console.log("new post 2 ", p)
                 console.log("time: ", a[3])
                 ch["posts"][e.header.ref] = p;
@@ -990,6 +994,15 @@ function b2f_new_event(e) { // incoming SSB log event: we get map with three ent
         persist();
         must_redraw = true;
     }
+}
+/* This function takes care of self-deleting messages on the receiving side*/
+function handleMessageWithDeletionOnReceiver(p){
+    var body = p.body;
+    var bodyWithoutPrefix = body.substring(26);
+    var indexOfEndingChar = bodyWithoutPrefix.indexOf(';');
+    var timeOfDeletion = bodyWithoutPrefix.substring(0,indexOfEndingChar);
+    p.deleteAfter = timeOfDeletion;
+    console.log("timeOfDeletion (receiver):",p.deleteAfter);
 }
 
 function b2f_new_contact(contact_str) { // '{"alias": "nickname", "id": "fid", 'img' : base64, date}'
