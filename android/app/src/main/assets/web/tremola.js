@@ -962,9 +962,7 @@ function b2f_new_event(e) { // incoming SSB log event: we get map with three ent
                 // if (a[1] != null)
                 //   txt = a[1];
                 //TODO implement recognition of self-deleting messages
-                if(a[1].startswith(";date;of;message;deletion;")){
-                    console.log("YES IT STARTS WITH \";date;of;message;deletion;\"");
-                }
+
                 var p = {
                     "key": e.header.ref, "from": e.header.fid, "body": a[1],
                     "voice": a[2], "when": a[3] * 1000
