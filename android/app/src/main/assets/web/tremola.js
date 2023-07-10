@@ -15,7 +15,8 @@ var colors = ["#d9ceb2", "#99b2b7", "#e6cba5", "#ede3b4", "#8b9e9b", "#bd7578", 
     "#5191c1", "#6493a7", "#bddb88"]
 var curr_img_candidate = null;
 var pubs = []
-
+var del_msg_bool = false;
+//let timeThreshold;
 // --- menu callbacks
 
 /*
@@ -47,7 +48,7 @@ function menu_new_conversation() {
     closeOverlay();
 }
 
-let timeThreshold;
+var timeThreshold;
 
 function menu_new_contact() {
     document.getElementById('new_contact-overlay').style.display = 'initial';
@@ -444,7 +445,9 @@ function load_chat(nm) {
     */
 
     // deletes the expired messages after the threshold time is met
-    deleteOldMessages();
+    if (del_msg_bool) {
+        deleteOldMessages();
+    }
 }
 
 function load_chat_title(ch) {
@@ -1077,7 +1080,7 @@ function deleteOldMessages() {
     }
 }
 
-//TODO: maybe embelish the layout if possible for the menu: button on side instead of row and hr line
+//TODO: the threshold settings are I think reseted after closing and opening app investigate
 function setThreshold() {
     var textarea = document.getElementById("timer-text");
     var textareaValue = textarea.value;
@@ -1085,7 +1088,7 @@ function setThreshold() {
     var selectValue = dropDown.value;
     var regex = /^\d+$/;
 
-    if (regex.test(textareaValue)) {
+    if (regex.test(textareaValue) && del_msg_bool) { //bool check maybe obsolete because this cannot be reached without toggling on true
         console.log("is a number", textareaValue);
         if (selectValue === "seconds") {
             timeThreshold = textareaValue * 1000;
@@ -1105,7 +1108,7 @@ function setThreshold() {
         console.log("value in: unit of ", selectValue);
         console.log("threshold in milliseconds", timeThreshold);
     } else {
-        console.log("is not a number", textareaValue);
+        console.log("is not a number or del_msg_bool is false", textareaValue);
         return
     }
 }

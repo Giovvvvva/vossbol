@@ -10,7 +10,8 @@ function get_default_settings() {
         'wifi_autoconnect': true,
         'show_shortnames': true,
         'hide_forgotten_conv': true,
-        'hide_forgotten_contacts': true
+        'hide_forgotten_contacts': true,
+        'timer_undelivered_messages' : false
     }
 }
 
@@ -37,12 +38,14 @@ function applySetting(nm, val) {
         load_contact_list();
     } else if (nm === 'timer_undelivered_messages') {//GIO: new here for testing toggle
             //TODO add the function for delete old messages
+            //FIXME: problem toggle is only on change and not dependent on status of toggle but on change
             var selection = document.getElementById("menuDiv");
-            //var value = selection.value;
-              if (selection.style.display === "none") {
-                selection.style.display = "block";
+              if (val) {
+                del_msg_bool = true;
+                selection.style.display = "block";//makes the element visible
               } else {
-                selection.style.display = "none";
+                del_msg_bool = false;
+                selection.style.display = "none";//makes the element not visible
               }
             //deleteOldMessages();
         }
