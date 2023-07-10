@@ -272,6 +272,13 @@ function new_text_post(s) {
         return;
     }
     var draft = unicodeStringToTypedArray(document.getElementById('draft').value); // escapeHTML(
+
+    //To check whether message should be deleted after certain amount of time
+    //TODO add Regex check
+    if(draft.startsWith(":deleteafter")){
+        draft = getNewDraftWithDateOfMessageDeletion(draft);
+    }
+
     var recps;
     if (curr_chat == "ALL") {
         recps = "ALL";
@@ -286,6 +293,37 @@ function new_text_post(s) {
         var c = document.getElementById('core');
         c.scrollTop = c.scrollHeight;
     }, 100);
+}
+/* This function takes a message with the prefix ':deleteafter' (should be in format ":deleteafter(0-9)*;(s|m|h|d|w)")
+and gives back the date when the message should be deleted*/
+function getNewDraftWithDateOfMessageDeletion(draft){
+    var withoutDeleteAfter = draft.substring(12);
+    indexOfEndingChar = withoutDeleteAfter.indexOf(';');
+    var amountOfTime = withoutDeleteAfter.substring(0, indexOfEndingChar);
+    var withoutAmountOfTimeAndEndingChar = withoutDeleteAfter.substring(indexOfEndingChar + 1);
+    var timeUnit = withoutDeleteAfter[indexOfEndingChar+1];
+    if (timeUnit === "s") {
+        amountOfTimeInMS = amountOfTime * 1000;
+    } else if (timeUnit === "m") {
+        amountOfTimeInMS = amountOfTime * 60 * 1000;
+    } else if (timeUnit === "h") {
+        amountOfTimeInMS = amountOfTime * 60 * 60 * 1000;
+    } else if (timeUnit === "d") {
+        amountOfTimeInMS = amountOfTime * 60 * 60 * 1000 * 24;
+    } else if (timeUnit === "w") {
+        amountOfTimeInMS = amountOfTime * 60 * 60 * 1000 * 24 * 7;
+    }
+    console.log("amountOfTime:",amountOfTime);
+    console.log("amountOfTimeInMS:",amountOfTimeInMS);
+    var today = new Date();
+    var dateOfMessageDeletion = new Date(today.getTime() + amountOfTimeInMS);
+    console.log("dateNow:",today.getTime());
+    console.log("dateOfMessageDeletion:",dateOfMessageDeletion.getTime());
+
+    //Adding date to the front of t
+    var newDraft = ";date;of;message;deletion;" + dateOfMessageDeletion.getTime() + ";" + withoutAmountOfTimeAndEndingChar.substring(1);
+    console.log("NEW MESSAGE:",newDraft);
+    return newDraft;
 }
 
 function new_voice_post(voice_b64) {
@@ -920,6 +958,10 @@ function b2f_new_event(e) { // incoming SSB log event: we get map with three ent
                 // var txt = null;
                 // if (a[1] != null)
                 //   txt = a[1];
+                //TODO implement recognition of self-deleting messages
+                if(a[1].startswith(";date;of;message;deletion;")){
+                    console.log("YES IT STARTS WITH \";date;of;message;deletion;\"");
+                }
                 var p = {
                     "key": e.header.ref, "from": e.header.fid, "body": a[1],
                     "voice": a[2], "when": a[3] * 1000
