@@ -1,4 +1,4 @@
-$// tremola.js
+// tremola.js
 
 "use strict";
 
