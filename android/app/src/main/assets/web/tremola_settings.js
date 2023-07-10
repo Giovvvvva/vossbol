@@ -37,8 +37,7 @@ function applySetting(nm, val) {
     } else if (nm == 'hide_forgotten_contacts') {
         load_contact_list();
     } else if (nm === 'timer_undelivered_messages') {//GIO: new here for testing toggle
-            //TODO add the function for delete old messages
-            //FIXME: problem toggle is only on change and not dependent on status of toggle but on change
+            //TODO how to save the timer values persistently
             var selection = document.getElementById("menuDiv");
               if (val) {
                 del_msg_bool = true;
