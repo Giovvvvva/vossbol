@@ -278,6 +278,7 @@ function new_text_post(s) {
     //TODO add Regex check
     if(draft.startsWith(":deleteafter")){
         draft = getNewDraftWithDateOfMessageDeletion(draft);
+
     }
 
     var recps;
@@ -299,20 +300,20 @@ function new_text_post(s) {
 and gives back the date when the message should be deleted*/
 function getNewDraftWithDateOfMessageDeletion(draft){
     var withoutDeleteAfter = draft.substring(12);
-    indexOfEndingChar = withoutDeleteAfter.indexOf(';');
+    var indexOfEndingChar = withoutDeleteAfter.indexOf(';');
     var amountOfTime = withoutDeleteAfter.substring(0, indexOfEndingChar);
     var withoutAmountOfTimeAndEndingChar = withoutDeleteAfter.substring(indexOfEndingChar + 1);
     var timeUnit = withoutDeleteAfter[indexOfEndingChar+1];
     if (timeUnit === "s") {
-        amountOfTimeInMS = amountOfTime * 1000;
+        var amountOfTimeInMS = amountOfTime * 1000;
     } else if (timeUnit === "m") {
-        amountOfTimeInMS = amountOfTime * 60 * 1000;
+        var amountOfTimeInMS = amountOfTime * 60 * 1000;
     } else if (timeUnit === "h") {
-        amountOfTimeInMS = amountOfTime * 60 * 60 * 1000;
+        var amountOfTimeInMS = amountOfTime * 60 * 60 * 1000;
     } else if (timeUnit === "d") {
-        amountOfTimeInMS = amountOfTime * 60 * 60 * 1000 * 24;
+        var amountOfTimeInMS = amountOfTime * 60 * 60 * 1000 * 24;
     } else if (timeUnit === "w") {
-        amountOfTimeInMS = amountOfTime * 60 * 60 * 1000 * 24 * 7;
+        var amountOfTimeInMS = amountOfTime * 60 * 60 * 1000 * 24 * 7;
     }
     console.log("amountOfTime:",amountOfTime);
     console.log("amountOfTimeInMS:",amountOfTimeInMS);
@@ -409,6 +410,12 @@ function load_post_item(p) { // { 'key', 'from', 'when', 'body', 'to' (if group 
 function load_chat(nm) {
     var ch, pl, e;
     ch = tremola.chats[nm]
+
+    // deletes the expired messages after the threshold time is met
+    if (del_msg_bool) {
+            deleteOldMessages(nm);
+    }
+
     if (ch.timeline == null)
         ch["timeline"] = new Timeline();
     pl = document.getElementById("lst:posts");
@@ -444,10 +451,7 @@ function load_chat(nm) {
     // console.log("did scroll down, but did it do it?")
     */
 
-    // deletes the expired messages after the threshold time is met
-    if (del_msg_bool) {
-        deleteOldMessages();
-    }
+
 }
 
 function load_chat_title(ch) {
@@ -1067,28 +1071,30 @@ function b2f_initialize(id) {
  * Deletes the posts that exceed the specified threshold of time in the settings.
  * Uses the firstRead property of the posts to determine whether this threshold has been exceeded
  */
-function deleteOldMessages() {
+function deleteOldMessages(chat) {
     //TODO TEST
-    for (var chat in tremola.chats) {
+    for (var post in tremola.chats[chat].posts) {
+          let today = new Date();
+          //if the post has first been read more than a certain amount of time, delete it
           if (
-            tremola.chats.hasOwnProperty(chat) &&
-            tremola.chats[chat] !== null &&
-            tremola.chats[chat] !== undefined
+            tremola.chats[chat].posts.hasOwnProperty(post) &&
+            tremola.chats[chat].posts[post] !== null &&
+            tremola.chats[chat].posts[post] !== undefined
           ) {
-                for (var post in tremola.chats[chat].posts) {
-                      let today = new Date();
-                      //if the post has first been read more than a certain amount of time, delete it
-                      if (
-                        tremola.chats[chat].posts.hasOwnProperty(post) &&
-                        tremola.chats[chat].posts[post] !== null &&
-                        tremola.chats[chat].posts[post] !== undefined &&
-                        today.getTime() - tremola.chats[chat].posts[post].when >= 10000
-                      ) {
-                            delete tremola.chats[chat].posts[post];
-                      }
+                if(today.getTime() - tremola.chats[chat].posts[post].when >= 10000){
+                    delete tremola.chats[chat].posts[post];
+                } else if (tremola.chats[chat].posts[post].hasOwnProperty(deleteAfter) &&
+                    tremola.chats[chat].posts[post].deleteAfter !== null &&
+                    tremola.chats[chat].posts[post].deleteAfter !== undefined &&
+                    tremola.chats[chat].posts[post].deleteAfter <= today.getTime()
+                ){
+                    delete tremola.chats[chat].posts[post];
                 }
+
           }
     }
+
+
 }
 
 //TODO: the threshold settings are I think reseted after closing and opening app investigate
